@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Copy, X, Loader2, Sparkles, Tag, CheckCheck } from 'lucide-react';
 import { SeoResult, RankTagsResult } from '../types';
+import { generateSeo, generateRankTags } from '../services/apiService';
 
 interface Props {
   onCopy: (text: string, label: string) => void;
@@ -24,12 +25,7 @@ export const SeoAndTags: React.FC<Props> = ({ onCopy }) => {
     if (!transcript.trim()) return;
     setLoadingSeo(true);
     try {
-      const res = await fetch('/api/generate/seo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transcript, titleIdea, language }),
-      });
-      const data = await res.json();
+      const data = await generateSeo(transcript, titleIdea, language);
       setSeoResult(data);
     } catch (err) {
       console.error(err);
@@ -42,12 +38,7 @@ export const SeoAndTags: React.FC<Props> = ({ onCopy }) => {
     if (!videoTitle.trim() || !channelName.trim()) return;
     setLoadingTags(true);
     try {
-      const res = await fetch('/api/generate/rank-tags', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoTitle, channelName }),
-      });
-      const data = await res.json();
+      const data = await generateRankTags(videoTitle, channelName);
       setTagResult(data);
     } catch (err) {
       console.error(err);

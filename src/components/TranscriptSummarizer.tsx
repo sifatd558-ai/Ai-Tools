@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Copy, X, Loader2, Sparkles, Languages } from 'lucide-react';
 import { TranscriptSummaryResult } from '../types';
+import { generateTranscriptSummary } from '../services/apiService';
 
 interface Props {
   onCopy: (text: string, label: string) => void;
@@ -17,12 +18,7 @@ export const TranscriptSummarizer: React.FC<Props> = ({ onCopy }) => {
     if (!transcript.trim()) return;
     setLoading(true);
     try {
-      const res = await fetch('/api/generate/transcript-summary', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transcript, length: summaryLength }),
-      });
-      const data = await res.json();
+      const data = await generateTranscriptSummary(transcript, summaryLength);
       setResult(data);
       setShowBengali(false);
     } catch (err) {

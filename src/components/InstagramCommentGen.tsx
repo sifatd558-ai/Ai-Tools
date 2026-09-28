@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Copy, X, Loader2, Instagram } from 'lucide-react';
 import { InstagramCommentsResult } from '../types';
+import { generateInstagramComments } from '../services/apiService';
 
 interface Props {
   onCopy: (text: string, label: string) => void;
@@ -15,12 +16,7 @@ export const InstagramCommentGen: React.FC<Props> = ({ onCopy }) => {
     if (!caption.trim()) return;
     setLoading(true);
     try {
-      const res = await fetch('/api/generate/instagram-comments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ caption }),
-      });
-      const data = await res.json();
+      const data = await generateInstagramComments(caption);
       setResult(data);
     } catch (err) {
       console.error(err);

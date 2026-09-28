@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Copy, X, Loader2, PenTool, Youtube, Instagram, Plus } from 'lucide-react';
 import { ContentGenerationResult } from '../types';
+import { generateContent, generateMoreComments } from '../services/apiService';
 
 interface Props {
   onCopy: (text: string, label: string) => void;
@@ -18,12 +19,7 @@ export const ContentGenerator: React.FC<Props> = ({ onCopy }) => {
     setLoading(true);
     setMoreComments([]);
     try {
-      const res = await fetch('/api/generate/content', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scriptContext }),
-      });
-      const data = await res.json();
+      const data = await generateContent(scriptContext);
       setResult(data);
     } catch (err) {
       console.error(err);
@@ -35,14 +31,9 @@ export const ContentGenerator: React.FC<Props> = ({ onCopy }) => {
   const handleGenerateMore = async () => {
     setLoadingMore(true);
     try {
-      const res = await fetch('/api/generate/more-comments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scriptContext }),
-      });
-      const data = await res.json();
-      if (data.comments) {
-        setMoreComments((prev) => [...prev, ...data.comments]);
+      const comments = await generateMoreComments(scriptContext);
+      if (comments && comments.length > 0) {
+        setMoreComments((prev) => [...prev, ...comments]);
       }
     } catch (err) {
       console.error(err);
