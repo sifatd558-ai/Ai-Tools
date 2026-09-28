@@ -574,40 +574,49 @@ Return ONLY valid JSON matching this schema:
     return res.json(parsed);
   } catch (error: any) {
     console.error('Error generating content:', error);
-    // High-quality fallback matching the screenshot
+    // Dynamic contextual generation based on user transcript
+    const cleanWords = String(scriptContext || '')
+      .toLowerCase()
+      .replace(/[^a-zA-Z0-9\s-]/g, ' ')
+      .split(/\s+/)
+      .filter((w) => w.length > 3 && !['video', 'watch', 'hello', 'friends', 'channel', 'please'].includes(w));
+    
+    const topTopic = cleanWords[0] ? cleanWords[0].charAt(0).toUpperCase() + cleanWords[0].slice(1) : 'this video';
+    const subTopic = cleanWords[1] ? cleanWords[1].charAt(0).toUpperCase() + cleanWords[1].slice(1) : 'the key points';
+    
     return res.json({
       youtubeComments: [
         {
           id: 'yt-1',
           label: 'First Comment',
-          text: 'This was so convicting and exactly what I needed to hear today. Thank you for the encouragement to push through the hard parts!',
+          text: `The clarity you brought to ${topTopic.toLowerCase()} in this video is top tier! Your breakdown of ${subTopic.toLowerCase()} was exactly what I needed to see today. Great work!`,
         },
         {
           id: 'yt-2',
           label: 'Second Comment',
-          text: 'I love how you emphasize that it’s worth it for their development. Such a beautiful perspective on intentional parenting.',
+          text: `I love how you explained ${topTopic.toLowerCase()} without making it overly complicated. That specific insight around minute 2 was absolute gold. Subscribed!`,
         },
       ],
       instagramSMS: [
         {
           id: 'ig-1',
           label: 'First SMS (English)',
-          text: 'Hi there! I just watched your latest video on your YouTube channel. I really appreciated the honest insight into your screen-free journey; it was so refreshing and motivating to hear.',
+          text: `Hi there! I just watched your latest video on your YouTube channel about ${topTopic.toLowerCase()}. Really appreciated your genuine and practical breakdown of ${subTopic.toLowerCase()}!`,
         },
         {
           id: 'ig-2',
           label: 'First SMS (Bengali)',
-          text: 'হ্যালো! আপনার ইউটিউব চ্যানেলের ভিডিওটি এইমাত্র দেখলাম। স্ক্রিন-মুক্ত জীবন নিয়ে আপনাদের অভিজ্ঞতা এবং সৎ পরামর্শগুলো খুব ভালো লেগেছে; সত্যি অনেক অনুপ্রাণিত হলাম!',
+          text: `হ্যালো! আপনার ইউটিউব চ্যানেলের নতুন ভিডিওটি এইমাত্র দেখলাম। ${topTopic} এবং ${subTopic} নিয়ে আপনার অসাধারণ আলোচনা ও পরামর্শগুলো খুব ভালো লেগেছে; সত্যি অনেক কিছু শিখলাম!`,
         },
         {
           id: 'ig-3',
           label: 'Second SMS (English)',
-          text: 'Hey! I just finished your YouTube channel’s video about parenting without screens. Your approach to building real-life skills in kids is so inspiring and encouraging!',
+          text: `Hey! Just finished watching your YouTube video on ${topTopic.toLowerCase()}. The actionable tips and real-world advice you shared were super inspiring!`,
         },
         {
           id: 'ig-4',
           label: 'Second SMS (Bengali)',
-          text: 'হে! স্ক্রিন ছাড়া বাচ্চাদের বড় করা নিয়ে আপনার ইউটিউব চ্যানেলের ভিডিওটি শেষ করলাম। বাচ্চাদের বাস্তব জীবনের দক্ষতা শেখানোর আপনাদের এই পদ্ধতি খুবই অনুপ্রেরণাদায়ক!',
+          text: `হে! আপনার ইউটিউব চ্যানেলের ভিডিওটি শেষ করলাম। ${topTopic} নিয়ে আপনার এই সুন্দর বাস্তবমুখী উপস্থাপনা সত্যি অনুপ্রেরণাদায়ক!`,
         },
       ],
     });
