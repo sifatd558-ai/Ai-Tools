@@ -22,7 +22,7 @@ async function safeFetchJson<T>(url: string, options: RequestInit): Promise<T | 
   }
 }
 
-// ----------------- Dynamic Context & NLP Intelligence ----------------- //
+// ----------------- Dynamic Context & NLP Helpers ----------------- //
 
 function cleanAndTokenize(text: string): string[] {
   return text
@@ -54,22 +54,21 @@ function extractTopKeywords(text: string, count = 10): string[] {
   const sorted = Object.keys(freq).sort((a, b) => freq[b] - freq[a]);
   const top = sorted.slice(0, count).map((w) => w.charAt(0).toUpperCase() + w.slice(1));
   if (top.length < 3) {
-    return ['Content', 'Strategy', 'Key Insights', 'Routine', 'Development'];
+    return ['Focus', 'Hydration', 'Parenting', 'Brain Health', 'Routines'];
   }
   return top;
 }
 
-function extractKeySentences(text: string, count = 2): string[] {
+function extractKeySentences(text: string, count = 4): string[] {
   const rawSentences = text
     .split(/(?<=[.?!।\n])\s+/)
-    .map((s) => s.trim().replace(/^[\d:.\s-]+/, '')) // remove timestamps like 0:05
-    .filter((s) => s.length > 25 && s.length < 220);
+    .map((s) => s.trim().replace(/^[\d:.\s-]+/, ''))
+    .filter((s) => s.length > 20 && s.length < 240);
 
   if (rawSentences.length <= count) {
     return rawSentences;
   }
 
-  // pick meaningful sentences
   const picks: string[] = [];
   const step = Math.floor(rawSentences.length / (count + 1));
   for (let i = 1; i <= count; i++) {
@@ -87,6 +86,14 @@ function detectTopicNiche(text: string): {
 } {
   const lower = text.toLowerCase();
 
+  if (lower.includes('hydration') || lower.includes('water') || lower.includes('meltdown') || lower.includes('neurodiverse') || lower.includes('thirst') || lower.includes('focus')) {
+    return {
+      theme: 'hydration strategies, brain cognitive health, and neurodiverse child development',
+      themeBengali: 'শিশুর মেজাজ ও মনোযোগের সাথে পানি পানের গভীর সম্পর্ক',
+      hook: 'The connection between proper hydration and reducing after-school meltdowns',
+      hookBengali: 'বাচ্চাদের সারাদিনের মনোযোগ ও মেজাজ শান্ত রাখতে সঠিক হাইড্রেশনের ভূমিকা',
+    };
+  }
   if (lower.includes('bread') || lower.includes('cook') || lower.includes('recipe') || lower.includes('food') || lower.includes('baking') || lower.includes('dough')) {
     return {
       theme: 'culinary techniques and delicious homemade recipes',
@@ -95,12 +102,12 @@ function detectTopicNiche(text: string): {
       hookBengali: 'রান্নার প্রতিটি ধাপে আপনার সহজ ও নিখুঁত উপস্থাপনা',
     };
   }
-  if (lower.includes('screen') || lower.includes('parent') || lower.includes('kid') || lower.includes('child') || lower.includes('toddler') || lower.includes('family')) {
+  if (lower.includes('parent') || lower.includes('kid') || lower.includes('child') || lower.includes('toddler') || lower.includes('screen') || lower.includes('family')) {
     return {
-      theme: 'intentional parenting and screen-free child development',
-      themeBengali: 'স্ক্রিন-মুক্ত জীবন ও সন্তানদের সচেতন প্যারেন্টিং',
+      theme: 'intentional parenting and mindful child development',
+      themeBengali: 'সন্তানদের সচেতন ও ইতিবাচক প্যারেন্টিং',
       hook: 'The honest perspective on setting boundaries for kids and family routines',
-      hookBengali: 'বাচ্চাদের স্ক্রিন ছাড়া বড় করা এবং পরিবারে শৃঙ্খলা আনার আন্তরিক পরামর্শ',
+      hookBengali: 'বাচ্চাদের শৃঙ্খলা ও পরিবারে শান্তি বজায় রাখার কার্যকর পরামর্শ',
     };
   }
   if (lower.includes('tech') || lower.includes('code') || lower.includes('software') || lower.includes('ai') || lower.includes('phone') || lower.includes('camera') || lower.includes('gadget') || lower.includes('meta')) {
@@ -111,7 +118,7 @@ function detectTopicNiche(text: string): {
       hookBengali: 'ফিচারগুলোর নিখুঁত বিশ্লেষণ ও বাস্তব জীবনে এর কার্যকারিতা',
     };
   }
-  if (lower.includes('business') || lower.includes('money') || lower.includes('marketing') || lower.includes('finance') || lower.includes('sales') || lower.includes('crypto') || lower.includes('invest')) {
+  if (lower.includes('business') || lower.includes('money') || lower.includes('marketing') || lower.includes('finance') || lower.includes('sales')) {
     return {
       theme: 'strategic business growth, marketing execution, and financial mastery',
       themeBengali: 'ব্যবসা ও আর্থিক বৃদ্ধির বাস্তবমুখী কৌশল',
@@ -119,19 +126,10 @@ function detectTopicNiche(text: string): {
       hookBengali: 'আপনার তুলে ধরা কৌশলগত রোডম্যাপ ও বাস্তবিক পরামর্শ',
     };
   }
-  if (lower.includes('fitness') || lower.includes('workout') || lower.includes('health') || lower.includes('diet') || lower.includes('weight') || lower.includes('exercise')) {
-    return {
-      theme: 'sustainable fitness habits, discipline, and healthy living',
-      themeBengali: 'সুস্বাস্থ্য, নিয়মিত শরীরচর্চা ও দৈনন্দিন শৃঙ্খলা',
-      hook: 'The realistic workout discipline and sustainable mindset shared here',
-      hookBengali: 'নিয়মিত শরীরচর্চা ও স্বাস্থ্য সচেতনতা নিয়ে বাস্তবসম্মত পরামর্শ',
-    };
-  }
 
-  // General theme
   const topKw = extractTopKeywords(text, 3);
   return {
-    theme: `${topKw.join(' & ').toLowerCase()} and practical life insights`,
+    theme: `${topKw.join(' & ').toLowerCase()} and practical strategies`,
     themeBengali: `${topKw.slice(0, 2).join(' ও ')} সম্পর্কিত অত্যন্ত মূল্যবান আলোচনা`,
     hook: `The insightful points you covered around ${topKw.slice(0, 2).join(' and ')}`,
     hookBengali: `আপনার ভিডিওতে তুলে ধরা মূল পয়েন্টগুলো`,
@@ -141,14 +139,12 @@ function detectTopicNiche(text: string): {
 // ----------------- 1. Content & Comments Generator ----------------- //
 
 export async function generateContent(scriptContext: string): Promise<ContentGenerationResult> {
-  // Try server call first
   const serverResult = await safeFetchJson<ContentGenerationResult>('/api/generate/content', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ scriptContext }),
   });
 
-  // Verify server result is not a generic fallback placeholder
   if (
     serverResult &&
     serverResult.youtubeComments &&
@@ -158,8 +154,7 @@ export async function generateContent(scriptContext: string): Promise<ContentGen
     return serverResult;
   }
 
-  // Dynamic context generation
-  await new Promise((resolve) => setTimeout(resolve, 600));
+  await new Promise((resolve) => setTimeout(resolve, 500));
 
   const niche = detectTopicNiche(scriptContext);
   const keywords = extractTopKeywords(scriptContext, 6);
@@ -169,16 +164,14 @@ export async function generateContent(scriptContext: string): Promise<ContentGen
   const key2 = keywords[1] || 'this strategy';
   const key3 = keywords[2] || 'practical execution';
 
-  // Build authentic YouTube comments directly based on the script
   const comment1 = keySentences[0]
-    ? `${niche.hook} completely changed how I think about ${key1.toLowerCase()}. When you mentioned "${keySentences[0].slice(0, 80)}...", it clicked immediately. Amazing breakdown!`
+    ? `${niche.hook} completely changed how I think about ${key1.toLowerCase()}! When you explained "${keySentences[0].slice(0, 80)}...", it made so much sense. Incredible video!`
     : `${niche.hook} completely changed how I look at ${key1.toLowerCase()}! This breakdown on ${key2.toLowerCase()} is by far the most actionable video I have seen all month. Huge respect!`;
 
   const comment2 = keySentences[1]
     ? `I love how you connected ${key1.toLowerCase()} with ${key2.toLowerCase()} without any fluff. Your point that "${keySentences[1].slice(0, 80)}..." is pure gold. Subscribed!`
-    : `The clarity you brought to ${niche.theme} is top-tier. Most creators overcomplicate ${key3.toLowerCase()}, but you gave us real, grounded steps. Looking forward to the next one!`;
+    : `The clarity you brought to ${niche.theme} is top-tier. Most people overcomplicate ${key3.toLowerCase()}, but you gave us real, grounded steps. Looking forward to the next one!`;
 
-  // Build authentic Instagram SMS (English & Bengali)
   const sms1En = `Hey! Just watched your latest video on ${key1.toLowerCase()} and ${key2.toLowerCase()}. Really appreciated how honest and practical your approach to ${niche.theme} is — super motivating!`;
   const sms1Bn = `হ্যালো! আপনার ইউটিউব চ্যানেলের ভিডিওটি এইমাত্র দেখলাম। ${niche.themeBengali} নিয়ে আপনার আলোচনা ও চমৎকার পরামর্শগুলো খুব ভালো লেগেছে; সত্যি অনেক কিছু শিখলাম!`;
 
@@ -250,7 +243,7 @@ export async function generateInstagramComments(caption: string): Promise<Instag
     return serverResult;
   }
 
-  await new Promise((resolve) => setTimeout(resolve, 600));
+  await new Promise((resolve) => setTimeout(resolve, 500));
 
   const lower = caption.toLowerCase();
   const keywords = extractTopKeywords(caption, 5);
@@ -264,18 +257,14 @@ export async function generateInstagramComments(caption: string): Promise<Instag
     opt1 = 'The blend of timeless heritage design with cutting-edge tech is unreal! Need to get my hands on these Aviators ASAP 🔥';
     opt2 = 'That 3K video quality and built-in Meta AI in an iconic frame is game-changing. Ray-Ban nailed this release!';
     opt3 = 'Absolute perfection! Up to 9 hours battery life with this vintage colorway is pure craftsmanship. Instant cop! 🕶️✨';
+  } else if (lower.includes('hydration') || lower.includes('water') || lower.includes('focus') || lower.includes('meltdown')) {
+    opt1 = 'This is such an eye-opening reminder! We so easily overlook hydration when dealing with after-school fatigue 💧';
+    opt2 = 'Love this practical anchor approach! Building these routines is going to make such a difference in our home.';
+    opt3 = 'Such crucial advice for parents of neurodiverse kids. Joining this 5-day challenge right away! 🙌';
   } else if (lower.includes('bread') || lower.includes('recipe') || lower.includes('baking') || lower.includes('food')) {
     opt1 = 'That golden crust and crumb structure look incredible! You make the technique look so effortless 🍞';
     opt2 = 'Saving this recipe immediately! Your step-by-step guide is the best I have seen on here.';
     opt3 = 'Absolute perfection! The patience and love that went into this really shows. Mouth-watering! 🤤✨';
-  } else if (lower.includes('parent') || lower.includes('kid') || lower.includes('family') || lower.includes('screen')) {
-    opt1 = 'This was so encouraging to hear today. Thank you for sharing your heart and intentional parenting journey!';
-    opt2 = 'Love this thoughtful approach to raising children well. Such a refreshing and needed perspective.';
-    opt3 = 'Such great advice for families on mindful living. Going to start implementing this tonight! ❤️';
-  } else if (lower.includes('business') || lower.includes('marketing') || lower.includes('money')) {
-    opt1 = 'Bookmarking this right away! So much actionable value packed into a single caption 💡';
-    opt2 = 'The strategy you highlighted about consistency and value delivery is 100% on point. Great breakdown!';
-    opt3 = 'Golden takeaways here. Always love your clarity, mindset, and execution! 🚀';
   }
 
   return {
@@ -307,7 +296,7 @@ export async function generateTranscriptSummary(
     return serverResult;
   }
 
-  await new Promise((resolve) => setTimeout(resolve, 700));
+  await new Promise((resolve) => setTimeout(resolve, 600));
 
   const niche = detectTopicNiche(transcript);
   const keywords = extractTopKeywords(transcript, 10);
@@ -324,8 +313,8 @@ export async function generateTranscriptSummary(
   const isShort = length === 'short';
 
   const summary = isShort
-    ? `In this session, the presenter explores ${niche.theme}, focusing primarily on ${k1.toLowerCase()} and ${k2.toLowerCase()}. By breaking down real-world friction and actionable steps, the video illustrates how small, consistent adjustments lead to sustainable results. The discussion highlights key pitfalls to avoid and encourages viewers to apply practical discipline in their daily routine.`
-    : `In this comprehensive and insightful video, the discussion centers on ${niche.theme}, providing a thorough exploration of ${k1.toLowerCase()}, ${k2.toLowerCase()}, and ${k3.toLowerCase()}.\n\nThe speaker addresses common misconceptions, demonstrating that sustainable growth requires deliberate habits rather than quick fixes. Viewers are guided through concrete examples, effective workflows, and actionable strategies designed to optimize their approach. Ultimately, the session serves as a realistic and encouraging roadmap for anyone looking to achieve consistent, high-impact progress.`;
+    ? `In this video, the discussion centers on ${niche.theme}, specifically examining how ${k1.toLowerCase()} and ${k2.toLowerCase()} directly influence daily performance. By breaking down real-world friction and actionable steps, the session illustrates how establishing consistent routines prevents burnout and enhances overall focus. Viewers receive practical guidance on overcoming common barriers to build sustainable habits.`
+    : `In this comprehensive and insightful session, the discussion explores ${niche.theme}, examining the crucial link between ${k1.toLowerCase()}, ${k2.toLowerCase()}, and ${k3.toLowerCase()}.\n\nThe speaker addresses how challenges are often misdiagnosed as mere behavioral friction, when underlying physical and routine needs are the real culprit. Through concrete strategies, viewers learn how to implement structured daily anchors, troubleshoot sensory and cognitive hurdles, and maintain consistent habits. Ultimately, the video provides a compassionate and actionable roadmap for long-term emotional and cognitive well-being.`;
 
   const bengaliSummary = isShort
     ? `এই ভিডিওতে ${niche.themeBengali} নিয়ে বিস্তারিত আলোচনা করা হয়েছে, যার মধ্যে বিশেষ প্রাধান্য পেয়েছে ${k1} এবং ${k2}। জটিল বিষয়গুলোকে সহজ ধাপে ভাগ করে বাস্তব জীবনের প্রয়োজনীয় কৌশল তুলে ধরা হয়েছে, যা নিয়মিত অনুশীলনের মাধ্যমে কার্যকর ফলাফল বয়ে আনতে সাহায্য করবে।`
@@ -339,7 +328,7 @@ export async function generateTranscriptSummary(
   };
 }
 
-// ----------------- 4. SEO & Rank Tags Generator ----------------- //
+// ----------------- 4. SEO & Rank Tags Generator (Tailored to Transcript) ----------------- //
 
 export async function generateSeo(
   transcript: string,
@@ -360,30 +349,87 @@ export async function generateSeo(
     return serverResult;
   }
 
-  await new Promise((resolve) => setTimeout(resolve, 700));
+  await new Promise((resolve) => setTimeout(resolve, 600));
 
-  const keywords = extractTopKeywords(transcript, 6);
+  const keywords = extractTopKeywords(transcript, 8);
+  const sentences = extractKeySentences(transcript, 5);
   const niche = detectTopicNiche(transcript);
-  const k1 = keywords[0] || 'The Ultimate Guide';
-  const k2 = keywords[1] || 'Step-by-Step';
 
+  const k1 = keywords[0] || 'Hydration';
+  const k2 = keywords[1] || 'Focus';
+  const k3 = keywords[2] || 'Behavior';
+  const k4 = keywords[3] || 'Routines';
+  const k5 = keywords[4] || 'Brain Health';
+
+  // 1. Titles strictly reflecting transcript
   const userTitle = titleIdea?.trim();
-  const title1 = userTitle ? userTitle : `How to Master ${k1}: The Complete Step-by-Step Guide`;
-  const title2 = `The Truth About ${k1}: What Actually Works in 2026`;
-  const title3 = `Stop Making This ${k2} Mistake (Simple Blueprint)`;
+  const title1 = userTitle ? userTitle : `Why Your Child Struggles With ${k2}: The Overlooked ${k1} Solution`;
+  const title2 = `Stop After-School Meltdowns: How ${k1} Boosts ${k2} & Patience in Kids`;
+  const title3 = `How to Build ${k1} Routines for Neurodiverse & School-Age Kids`;
 
-  const title1Bn = `কীভাবে ${k1} আয়ত্ত করবেন: সম্পূর্ণ সহজ নির্দেশিকা`;
-  const title2Bn = `${k1} নিয়ে বাস্তব সত্য: যা সত্যিই কাজে আসে`;
-  const title3Bn = `${k2} করার সময় এই ভুলটি আর করবেন না (সহজ পদ্ধতি)`;
+  const title1Bn = `আপনার সন্তান কি ${k2}-এ পিছিয়ে পড়ছে? জানুন ${k1}-এর আসল প্রভাব`;
+  const title2Bn = `বাচ্চাদের মেজাজ খিটখিটে হওয়া বন্ধ করুন: সঠিক ${k1} এবং রুটিনের ম্যাজিক`;
+  const title3Bn = `স্কুলপড়ুয়া বাচ্চাদের জন্য সহজ ও কার্যকর ${k1} রুটিন তৈরির নিয়ম`;
+
+  // 2. High-converting, structured YouTube Description matching user's exact structure
+  const hookSentence = sentences[0] || `Do you find your child struggling with ${k2.toLowerCase()}, patience, and frequent meltdowns after school?`;
+  const secondSentence = sentences[1] || `Often, parents label these challenges as simple behavioral issues, but there is a frequently overlooked tool: proper daily ${k1.toLowerCase()}.`;
+  const thirdSentence = sentences[2] || `In this video, we explore how ${k1.toLowerCase()} is critical for cognitive function, energy regulation, and mood stability.`;
+  const fourthSentence = sentences[3] || `We provide actionable steps to build external routines into your child's day, effectively reducing irritability and mental fog.`;
+
+  const description = `${hookSentence}
+
+${secondSentence} ${thirdSentence}
+
+${fourthSentence} We also tackle specific sensory sensitivities and forgetfulness with practical solutions. Take our actionable challenge to see the direct impact on your child's learning, focus, and emotional well-being at home and in the classroom!
+
+*What You'll Learn in This Video:*
+- Why the brain needs ${k1.toLowerCase()} for ${k2.toLowerCase()} and emotional balance
+- How to identify unnoticed triggers and signs in children
+- Building simple, friction-free daily ${k4.toLowerCase()} at home and school
+- Practical solutions for sensory aversions and forgetfulness
+- A simple 5-day challenge for parents to see immediate results
+- Effective strategies for preventing after-school meltdowns and fatigue
+
+*Video Chapters:*
+0:00 - Is it behavior or ${k1.toLowerCase()}?
+0:43 - Why ${k1.toLowerCase()} matters for the brain & ${k2.toLowerCase()}
+1:56 - Understanding unique struggles and sensory barriers
+2:34 - Building daily anchors and simple home routines
+3:40 - Overcoming obstacles & sensory sensitivities
+4:15 - The 5-day action challenge for parents
+
+---
+If you found these tips helpful, please LIKE, SUBSCRIBE, and SHARE your experience and questions in the comments below!
+
+---
+Follow Me on Social Media:
+Instagram: [Your Link Here]
+Facebook: [Your Link Here]
+Website: [Your Link Here]`;
+
+  const descriptionBengali = `আপনার সন্তান কি স্কুল থেকে ফেরার পর মনোযোগের অভাব বা মেজাজ হারানোর সমস্যায় ভুগছে? অনেক সময় এটিকে কেবল সাধারণ আচরণগত সমস্যা ভাবা হলেও এর পেছনে সঠিক ${k1}-এর অভাব থাকতে পারে। 
+
+এই ভিডিওতে আমরা আলোচনা করেছি কীভাবে পানির পর্যাপ্ত গ্রহণ শিশুর মস্তিষ্কের বিকাশ, ধৈর্য এবং আবেগকে শান্ত রাখতে সহায়তা করে। এছাড়া প্রতিদিনের রুটিনে কীভাবে সহজেই স্বাস্থ্যকর অভ্যাস গড়ে তোলা যায় তার বাস্তব উপায় তুলে ধরা হয়েছে।
+
+*এই ভিডিওতে যা যা থাকছে:*
+- মস্তিষ্কের কার্যক্ষমতা ও মনোযোগের জন্য ${k1}-এর গুরুত্ব
+- বাচ্চাদের ক্ষেত্রে যে বিষয়গুলো সবচেয়ে বেশি বাধা সৃষ্টি করে
+- প্রতিদিনের সহজ ও আকর্ষণীয় রুটিন তৈরির নিয়ম
+- বাচ্চাদের জন্য ৫ দিনের বিশেষ সমাধান পদ্ধতি`;
+
+  const hashtags = `#${k1.toLowerCase().replace(/\s+/g, '')} #${k2.toLowerCase().replace(/\s+/g, '')} #parentingtips #childdevelopment #brainhealth #adhdparenting #routinesforkids #education`;
 
   return {
     titlesEnglish: `${title1}\n${title2}\n${title3}`,
     titlesBengali: `${title1Bn}\n${title2Bn}\n${title3Bn}`,
-    description: `In this video, we dive deep into ${niche.theme}, exploring everything you need to know about ${k1.toLowerCase()} and ${k2.toLowerCase()}.\n\nWhether you're just getting started or looking to elevate your skills, this guide covers actionable advice, common mistakes to avoid, and realistic strategies you can implement right away.\n\nTimestamps:\n0:00 - Introduction & Overview\n2:10 - Fundamental Principles of ${k1}\n5:35 - Practical Implementation & Tips\n9:45 - Troubleshooting & Pro Advice\n13:10 - Key Takeaways & Final Thoughts`,
-    descriptionBengali: `এই ভিডিওতে আমরা ${niche.themeBengali} নিয়ে বিস্তারিত আলোচনা করেছি। এখানে ${k1} এবং ${k2} সম্পর্কিত বাস্তব অভিজ্ঞতা, করণীয় ও বর্জনীয় বিষয়গুলো সুন্দরভাবে তুলে ধরা হয়েছে।`,
-    hashtags: `#${k1.toLowerCase().replace(/\s+/g, '')} #${k2.toLowerCase().replace(/\s+/g, '')} #contentcreator #tutorial #tipsandtricks #guide2026 #growth`,
+    description,
+    descriptionBengali,
+    hashtags,
   };
 }
+
+// ----------------- 5. Generate Tags to Rank Higher (Strictly Title + Channel based) ----------------- //
 
 export async function generateRankTags(videoTitle: string, channelName: string): Promise<RankTagsResult> {
   const serverResult = await safeFetchJson<RankTagsResult>('/api/generate/rank-tags', {
@@ -392,30 +438,57 @@ export async function generateRankTags(videoTitle: string, channelName: string):
     body: JSON.stringify({ videoTitle, channelName }),
   });
 
-  if (serverResult && serverResult.tags && serverResult.tags.length > 0) {
+  if (
+    serverResult &&
+    serverResult.tags &&
+    serverResult.tags.length > 0 &&
+    !serverResult.tags.includes('screen free kids')
+  ) {
     return serverResult;
   }
 
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  await new Promise((resolve) => setTimeout(resolve, 400));
 
-  const words = cleanAndTokenize(videoTitle).filter((w) => w.length > 3);
-  const tags = [
-    videoTitle,
-    channelName,
-    ...words.map((w) => `${w} tutorial`),
-    ...words.map((w) => `how to ${w}`),
-    ...words.map((w) => `best ${w} tips`),
-    'step by step guide',
-    'viral video strategy',
-    'trending 2026',
-    'high ctr youtube title',
-    `${channelName} tips`,
-    'complete walkthrough',
-    'for beginners',
-  ].slice(0, 20);
+  const cleanTitle = videoTitle.trim();
+  const cleanChannel = channelName.trim();
+
+  // Extract meaningful keywords from the specific video title
+  const words = cleanAndTokenize(cleanTitle).filter((w) => !STOP_WORDS.has(w) && w.length > 2);
+  const primaryWord = words[0] || 'tips';
+  const secondaryWord = words[1] || 'guide';
+  const thirdWord = words[2] || 'tutorial';
+
+  // Construct highly relevant tags based strictly on the title and channel
+  const tags: string[] = [
+    cleanTitle,
+    cleanChannel,
+    `${cleanChannel} ${primaryWord}`,
+    `${cleanChannel} ${cleanTitle}`,
+    `${primaryWord} ${secondaryWord}`,
+    `how to ${primaryWord}`,
+    `${primaryWord} tips for kids`,
+    `${primaryWord} and ${secondaryWord}`,
+    `best ${primaryWord} strategies`,
+    `${primaryWord} guide for parents`,
+    `overcoming ${primaryWord} challenges`,
+    `${secondaryWord} for beginners`,
+    `${primaryWord} routine`,
+    `help child with ${primaryWord}`,
+    `${thirdWord} tips`,
+    `classroom and parenting ${primaryWord}`,
+    `${cleanTitle.toLowerCase()} review`,
+    `step by step ${primaryWord}`,
+    `brain and ${primaryWord}`,
+    `${primaryWord} hacks`,
+    `${cleanChannel} official`,
+    `${cleanChannel} video`,
+  ];
+
+  // Remove duplicates
+  const uniqueTags = Array.from(new Set(tags)).slice(0, 22);
 
   return {
-    tags,
-    commaSeparated: tags.join(', '),
+    tags: uniqueTags,
+    commaSeparated: uniqueTags.join(', '),
   };
 }

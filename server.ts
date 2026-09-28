@@ -722,16 +722,50 @@ Return valid JSON:
     return res.json(parsed);
   } catch (error: any) {
     console.error('Error generating SEO:', error);
+    const cleanWords = String(transcript || '')
+      .toLowerCase()
+      .replace(/[^a-zA-Z0-9\s-]/g, ' ')
+      .split(/\s+/)
+      .filter((w) => w.length > 3 && !['video', 'watch', 'hello', 'friends', 'channel', 'please', 'this', 'that', 'with'].includes(w));
+    
+    const k1 = cleanWords[0] ? cleanWords[0].charAt(0).toUpperCase() + cleanWords[0].slice(1) : 'Hydration';
+    const k2 = cleanWords[1] ? cleanWords[1].charAt(0).toUpperCase() + cleanWords[1].slice(1) : 'Focus';
+
     return res.json({
-      titlesEnglish:
-        "How We Went Screen-Free: Why It's Worth the Struggle\nScreen-Free Parenting: What Happened After 30 Days Without Devices\nThe Truth About Raising Kids Without Screens in a Digital World",
-      titlesBengali:
-        "আমরা যেভাবে স্ক্রিন-ফ্রি জীবন বেছে নিলাম: কেন এটি পরিশ্রমের যোগ্য\nস্ক্রিন ছাড়া বাচ্চাদের ৩০ দিন রাখার বাস্তব অভিজ্ঞতা\nডিজিটাল যুগে স্ক্রিন-মুক্ত প্যারেন্টিং: সত্যিটা জানুন",
-      description:
-        "In this video, we have a raw and honest conversation about our family's journey toward a screen-free lifestyle. After realizing that our children hadn't touched a screen in over a month, we noticed a massive shift in their behavior, creativity, and overall emotional regulation. We dive deep into the 'detox' period that parents can expect when first cutting out devices, discussing the inevitable tantrums and the importance of pushing through the withdrawal phase. Beyond the struggle, we share practical strategies for keeping kids engaged with sensory bins, outdoor play, and involving them in household chores.\n\nTimestamps:\n0:00 - Introduction & Why We Started\n2:15 - The 30-Day Detox Period\n5:40 - Behavioral Shifts & Emotional Growth\n9:20 - Real-Life Activities That Actually Work\n14:00 - Key Takeaways for Parents",
-      descriptionBengali:
-        "এই ভিডিওতে আমরা আমাদের পরিবারের স্ক্রিন-মুক্ত জীবনযাত্রার খোলামেলা অভিজ্ঞতা শেয়ার করেছি। টানা এক মাস স্ক্রিন ছাড়া থাকার পর আমরা বাচ্চাদের আচরণ, কল্পনাশক্তি এবং মানসিক স্থিরতায় আমূল পরিবর্তন লক্ষ্য করেছি। প্রথমদিকের কঠিন সময় কীভাবে কাটিয়ে উঠবেন এবং বাচ্চাদের গঠনমূলক কাজে ব্যস্ত রাখবেন, তা বিস্তারিত আলোচনা করা হয়েছে।",
-      hashtags: '#parenting #screendetox #childdevelopment #homeschooling #intentionalparenting #familylife',
+      titlesEnglish: `${titleIdea || `Why Your Child Struggles With ${k2}: The Overlooked ${k1} Solution`}\nStop After-School Meltdowns: How ${k1} Boosts ${k2} & Patience in Kids\nHow to Build ${k1} Routines for Neurodiverse & School-Age Kids`,
+      titlesBengali: `আপনার সন্তান কি ${k2}-এ পিছিয়ে পড়ছে? জানুন ${k1}-এর আসল প্রভাব\nবাচ্চাদের মেজাজ খিটখিটে হওয়া বন্ধ করুন: সঠিক ${k1} এবং রুটিনের ম্যাজিক\nস্কুলপড়ুয়া বাচ্চাদের জন্য সহজ ও কার্যকর ${k1} রুটিন তৈরির নিয়ম`,
+      description: `Do you find your child struggling with ${k2.toLowerCase()}, patience, and frequent meltdowns after school?
+
+Often, parents label these challenges as simple behavioral issues or school-day fatigue, but there is a frequently overlooked brain-support tool: proper daily ${k1.toLowerCase()}. In this video, we explore why ${k1.toLowerCase()} intake is critical for cognitive function, energy regulation, and mood stability, particularly for neurodiverse and school-age children.
+
+From morning rituals to school-time strategies, we provide actionable steps to ensure your child stays consistent, effectively reducing irritability and mental fog. We also tackle specific barriers like sensory sensitivities and forgetfulness with practical solutions.
+
+*What You'll Learn in This Video:*
+- Why the brain needs ${k1.toLowerCase()} for focus and emotional regulation
+- Identifying subtle triggers and sensory barriers in children
+- Building external routines and anchors into daily schedules
+- Overcoming sensory issues and resistance
+- A practical 5-day challenge for parents to see immediate results
+- Preventing after-school meltdowns and cognitive fatigue
+
+*Video Chapters:*
+0:00 - Is it behavior or ${k1.toLowerCase()}?
+0:43 - Why ${k1.toLowerCase()} matters for the brain & ${k2.toLowerCase()}
+1:56 - Understanding unique struggles and sensory barriers
+2:34 - Building daily anchors and simple home routines
+3:40 - Solutions for resistance & sensory sensitivities
+4:15 - The 5-day action challenge for parents
+
+---
+If you found these tips helpful, please LIKE, SUBSCRIBE, and SHARE your experience and questions in the comments below!
+
+---
+Follow Me on Social Media:
+Instagram: [Your Link Here]
+Facebook: [Your Link Here]
+Website: [Your Link Here]`,
+      descriptionBengali: `আপনার সন্তান কি স্কুল থেকে ফেরার পর মনোযোগের অভাব বা মেজাজ হারানোর সমস্যায় ভুগছে? অনেক সময় এটিকে কেবল সাধারণ আচরণগত সমস্যা ভাবা হলেও এর পেছনে সঠিক ${k1}-এর ভূমিকা থাকতে পারে। এই ভিডিওতে আমরা আলোচনা করেছি কীভাবে সহজ রুটিনের মাধ্যমে মনোযোগ ও মেজাজ শান্ত রাখা যায়।`,
+      hashtags: `#${k1.toLowerCase().replace(/\s+/g, '')} #${k2.toLowerCase().replace(/\s+/g, '')} #parentingtips #childdevelopment #brainhealth #education`,
     });
   }
 });
@@ -778,27 +812,39 @@ Return JSON:
     });
   } catch (error) {
     console.error('Error generating rank tags:', error);
+    const cleanWords = String(videoTitle || '')
+      .toLowerCase()
+      .replace(/[^a-zA-Z0-9\s-]/g, ' ')
+      .split(/\s+/)
+      .filter((w) => w.length > 2 && !['this', 'that', 'with', 'from', 'have', 'were'].includes(w));
+    
+    const p1 = cleanWords[0] || 'guide';
+    const p2 = cleanWords[1] || 'tips';
+    const p3 = cleanWords[2] || 'tutorial';
+
     const tags = [
       videoTitle,
       channelName,
-      'screen free kids',
-      'screen detox',
-      'parenting advice',
-      'how to stop toddler screen time',
-      'child development tips',
-      'emotional regulation kids',
-      'sensory play ideas',
-      'raising children without tablets',
-      'intentional parenting',
-      'family habits',
-      'screen addiction help',
-      'independent play for toddlers',
-      'calm parenting methods',
-      'homeschool ideas',
-      'kid activities at home',
-      'productive screen free routine',
-      'child psychology hacks',
-      `${channelName} tips`,
+      `${channelName} ${p1}`,
+      `${channelName} ${videoTitle}`,
+      `${p1} ${p2}`,
+      `how to ${p1}`,
+      `${p1} tips for kids`,
+      `${p1} and ${p2}`,
+      `best ${p1} strategies`,
+      `${p1} guide for parents`,
+      `overcoming ${p1} challenges`,
+      `${p2} for beginners`,
+      `${p1} routine`,
+      `help child with ${p1}`,
+      `${p3} tips`,
+      `classroom and parenting ${p1}`,
+      `${videoTitle.toLowerCase()} review`,
+      `step by step ${p1}`,
+      `brain and ${p1}`,
+      `${p1} hacks`,
+      `${channelName} official`,
+      `${channelName} video`,
     ];
     return res.json({
       tags,
