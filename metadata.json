@@ -1,0 +1,7 @@
+{
+  "name": "AI Content Suite Pro",
+  "description": "All-in-one AI suite for YouTube transcript summarization, content & comment generation, SEO ranking tags, and Instagram comments with complete admin access control.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
